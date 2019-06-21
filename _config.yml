@@ -1,2 +1,4 @@
 name: Yannick Feld, Homepage
 markdown : kramdown
+sass:
+    style: compressed
