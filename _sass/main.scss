@@ -25,14 +25,12 @@
 }
 
 .content{
-  width: auto;
-  margin: 10px;
   flex-grow: 1;
+  position: relative;
+  left: 20px;
+  padding-right: 40px;
 }
 
-.content > div{
-  margin-left:5px;
-}
 
 @media only screen and (max-width: 600px) {
   .content{
@@ -64,7 +62,6 @@
     margin: 0 auto;
   }
 }
-
 
 @media only screen and (max-width: 600px) {
   .autoCenter{
