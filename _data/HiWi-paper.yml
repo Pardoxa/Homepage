@@ -1,0 +1,39 @@
+- name: HiWi-2016
+  author: El Ali, Abdallah and Matviienko, Andrii and Feld, Yannick and Heuten, Wilko and Boll, Susanne
+  title: "VapeTracker: Tracking Vapor Consumption to Help E-cigarette Users Quit"
+  booktitle: "Proceedings of the 2016 CHI Conference Extended Abstracts on Human Factors in Computing Systems"
+  series: "CHI EA '16"
+  year: "2016"
+  isbn: "978-1-4503-4082-3"
+  location: "San Jose, California, USA"
+  pages: "2049--2056"
+  numpages: "8"
+  url: http://doi.acm.org/10.1145/2851581.2892318
+  doi: 10.1145/2851581.2892318
+  acmid: 2892318
+  publisher: ACM
+  address: "New York, NY, USA"
+  keywords: "behavior change technology, e-cigarettes, habits, health, prototype, sensors, tracking, vapetracker, vaping"
+
+- name: HiWi-2018
+  author: "Matviienko, Andrii and Ananthanarayan, Swamy and Borojeni, Shadan Sadeghian and Feld, Yannick and Heuten, Wilko and Boll, Susanne"
+  title: "Augmenting Bicycles and Helmets with Multimodal Warnings for Children"
+  booktitle: "Proceedings of the 20th International Conference on Human-Computer Interaction with Mobile Devices and Services"
+  series: "MobileHCI '18"
+  year: 2018
+  isbn: 978-1-4503-5898-9
+  location: Barcelona, Spain
+  pages: "15:1--15:13"
+  articleno: 15
+  numpages: 13
+  url: http://doi.acm.org/10.1145/3229434.3229479
+  doi: 10.1145/3229434.3229479
+  acmid: 3229479
+  publisher: ACM
+  address: New York, NY, USA
+  keywords: bicycle safety, bicycle simulator, child cyclists, collision avoidance, multimodal warnings
+
+- name: HiWi-2018-2
+  author: "Matviienko, Andrii and El Ali, Abdallah and Hilmer, Christin and Feld, Yannick and Heuten, Wilko and Boll, Susanne"
+  title: "Designing Metaphor-Based Ambient Tangible Artifacts to Support Workspace Awareness"
+  doi: 10.1515/icom-2018-0024

@@ -1,0 +1,15 @@
+
+<ol style="list-style-type: decimal;">
+  {% for item in site.data.HiWi-paper %}
+  <li class="deci">
+    <ul class="circ">
+      <li style="float: none;">  {{ item.title }}  </li>
+      <br />
+      <li class="circ">{{ item.author }}</li>
+      <li class="circ"><a class="blue" href="https://doi.org/{{ item.doi }}">doi: {{ item.doi }} </a> </li>
+      {% if item.isbn %} <li class="circ">ISBN: {{ item.isbn }}</li> {% endif %}
+    </ul>
+  </li>
+  <br />
+  {% endfor %}
+</ol>
