@@ -7,9 +7,11 @@
   </head>
   <body>
     {% include navigation.html %}
-    {% if page.showContactInfo %} {% include contactInfo.html %} {%endif %}
-    <div class="content">
-    {{ content }}
-    </div>
+    <div style="width: 100%;">
+      {% if page.showContactInfo %} {% include contactInfo.html %} {%endif %}
+      <div class="content">
+            {{ content }}
+      </div>
+  </div>
   </body>
 </html>

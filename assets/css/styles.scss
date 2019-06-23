@@ -17,6 +17,10 @@ a{
   color:inherit;
 }
 
+a.blue{
+  color: blue;
+}
+
 html {
   height: 100%;
 }
@@ -27,6 +31,18 @@ body{
   display: flex;
 }
 
-h1 {
+autoCenter{
+  text-align: center;
+}
+
+h2.contact {
+  text-align: inherit;
   margin: inherit;
+  font-size: 26px;
+  font-size: 2em;
+}
+
+p.contact {
+    font-size: 16px;
+    font-size: 1em;
 }
