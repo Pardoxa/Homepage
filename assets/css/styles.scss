@@ -7,10 +7,6 @@ li {
   list-style-type: none;
 }
 
-li a {
-  display: block;
-  padding: 8px;
-}
 
 ul.circ{
   list-style-type: disc;
@@ -34,6 +30,8 @@ li.deci{
 a{
   text-decoration: none;
   color:inherit;
+  margin: 0;
+  display: inline;
 }
 
 a.blue{
