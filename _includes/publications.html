@@ -1,16 +1,25 @@
 
+
 <ol style="list-style-type: decimal;">
   {% for item in site.data.HiWi-paper %}
-  <li class="deci">
-    <ul class="circ">
-      <li style="float: none;">  {{ item.title }}  </li>
-      <br />
-      {% if item.year %} <li class="circ">{{ item.year }}</li> {% endif %}
-      <li class="circ">{{ item.author }}</li>
-      <li class="circ"><a class="blue" href="https://doi.org/{{ item.doi }}">doi: {{ item.doi }}</a></li>
-      {% if item.isbn %} <li class="circ">ISBN: {{ item.isbn }}</li> {% endif %}
-    </ul>
-  </li>
-  <br />
+  <li class="deci" style="padding-left:1em">
+  <p>
+    <div class="pub-container" align="left">
+        <div class="pub-title"><strong><b>{{ item.title }}  </b></strong></div>
+        <div class="pub-authors">{{ item.author }}</div>
+        <div class="pub-journalref">
+            {% if item.publisher %} <span class="pub-journal"><b>{{ item.publisher }}</b></span> {% endif %}
+            {% if item.volume %} <span class="pub-volume">: <b>{{ item.volume }}</b>,</span> {% endif %}
+            {% if item.pages %}<span class="pub-number">{{ item.pages }}</span> {% endif %}
+            {% if item.year %} (<span class="pub-year"> {{ item.year }}</span>) {% endif %}
+        </div>
+        <div class="pub-links">
+          {% if item.download %} <a class="pub-download nowrap" href= {{ item.download }}><i class="fas fa-download" aria-hidden="true"></i> download</a>, {% endif %}
+          {% if item.doi %}    <a class="pub-doi nowrap" href="https://dx.doi.org/{{ item.doi }}" rel="nofollow" target="_blank" aria-label="DOI"><i class="ai ai-doi" aria-hidden="true"></i>DOI: {{ item.doi }}{% if item.isbn %},{% endif%}</a>  {% endif %}
+          {% if item.isbn %}ISBN: {{ item.isbn }}  {% endif %}
+        </div>
+    </div>
+  </p>
+</li>
   {% endfor %}
 </ol>

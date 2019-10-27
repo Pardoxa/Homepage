@@ -1,5 +1,5 @@
 - name: HiWi-2016
-  author: El Ali, Abdallah and Matviienko, Andrii and Feld, Yannick and Heuten, Wilko and Boll, Susanne
+  author: Abdallah El Ali, Andrii Matviienko, Yannick Feld, Wilko Heuten and Susanne Boll
   title: "VapeTracker: Tracking Vapor Consumption to Help E-cigarette Users Quit"
   booktitle: "Proceedings of the 2016 CHI Conference Extended Abstracts on Human Factors in Computing Systems"
   series: "CHI EA '16"
@@ -16,7 +16,7 @@
   keywords: "behavior change technology, e-cigarettes, habits, health, prototype, sensors, tracking, vapetracker, vaping"
 
 - name: HiWi-2018
-  author: "Matviienko, Andrii and Ananthanarayan, Swamy and Borojeni, Shadan Sadeghian and Feld, Yannick and Heuten, Wilko and Boll, Susanne"
+  author: " Andrii Matviienko, Swamy Ananthanarayan, Shadan Sadeghian Borojeni, Yannick Feld, Wilko Heuten and Susanne Boll"
   title: "Augmenting Bicycles and Helmets with Multimodal Warnings for Children"
   booktitle: "Proceedings of the 20th International Conference on Human-Computer Interaction with Mobile Devices and Services"
   series: "MobileHCI '18"
@@ -34,7 +34,10 @@
   keywords: bicycle safety, bicycle simulator, child cyclists, collision avoidance, multimodal warnings
 
 - name: HiWi-2018-2
-  author: "Matviienko, Andrii and El Ali, Abdallah and Hilmer, Christin and Feld, Yannick and Heuten, Wilko and Boll, Susanne"
+  author: "Andrii Matviienko, Abdallah El Ali, Christin Hilmer, Yannick Feld, Wilko Heuten and Susanne Boll"
   title: "Designing Metaphor-Based Ambient Tangible Artifacts to Support Workspace Awareness"
   doi: 10.1515/icom-2018-0024
   year: 2018
+  publisher: i-com
+  volume: 17(3)
+  pages: 219-235
