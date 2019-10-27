@@ -8,7 +8,7 @@ theme: jekyll-theme-prologue
 collections: [sections]
 author: Yannick Feld
 email: yannick.feld@uni-oldenburg.de
-avatar: assets/images/I.jpg
+avatar: assets/images/me.jpg
 github_url: https://github.com/Pardoxa
 plugins:
   - jekyll-sitemap
