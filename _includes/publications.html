@@ -8,10 +8,10 @@
         <div class="pub-title"><strong><b>{{ item.title }}  </b></strong></div>
         <div class="pub-authors">{{ item.author }}</div>
         <div class="pub-journalref">
-            {% if item.publisher %} <span class="pub-journal"><b>{{ item.publisher }}</b></span> {% endif %}
-            {% if item.volume %} <span class="pub-volume">: <b>{{ item.volume }}</b>,</span> {% endif %}
+            {% if item.publisher %}<span class="pub-journal"><b>{{ item.publisher }}</b></span> {% endif %}
+            {% if item.volume %}<span class="pub-volume">: <b>{{ item.volume }}</b>,</span> {% endif %}
             {% if item.pages %}<span class="pub-number">{{ item.pages }}</span> {% endif %}
-            {% if item.year %} (<span class="pub-year"> {{ item.year }}</span>) {% endif %}
+            {% if item.year %}(<span class="pub-year">{{ item.year }}</span>) {% endif %}
         </div>
         <div class="pub-links">
           {% if item.download %} <a class="pub-download nowrap" href= {{ item.download }}><i class="fas fa-download" aria-hidden="true"></i> download</a>, {% endif %}
