@@ -3,6 +3,7 @@ title: Yannick Feld
 markdown : kramdown
 sass:
     style: compressed
+remote_theme: chrisbobbe/jekyll-theme-prologue
 theme: jekyll-theme-prologue
 collections: [sections]
 author: Yannick Feld
