@@ -6,7 +6,7 @@
   year: "2016"
   isbn: "978-1-4503-4082-3"
   location: "San Jose, California, USA"
-  pages: "2049--2056"
+  pages: "2049-2056"
   numpages: "8"
   url: http://doi.acm.org/10.1145/2851581.2892318
   doi: 10.1145/2851581.2892318
@@ -23,7 +23,7 @@
   year: 2018
   isbn: 978-1-4503-5898-9
   location: Barcelona, Spain
-  pages: "15:1--15:13"
+  pages: "15:1-15:13"
   articleno: 15
   numpages: 13
   url: http://doi.acm.org/10.1145/3229434.3229479

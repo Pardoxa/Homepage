@@ -7,6 +7,7 @@ cover-photo: assets/images/banner.jpg
 cover-photo-alt: example cover photo
 auto-header: none
 ---
+
 <div>
   <ul>
 {% for item in site.data.usefulLinks %}
