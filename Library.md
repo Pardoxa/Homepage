@@ -10,6 +10,6 @@ icon: fa-th
 order: 1
 ---
 
-# I am currently working on a library for network ensembles using Rust.
+# I am currently working on a library for network ensembles using Rust
 * You can find the library on my [github page](https://github.com/Pardoxa/net_ensembles).
-* You can read the <a href="lib/doc/net_ensembles/">Documentation here</a>.
+* You can read the Documentation [here](https://pardoxa.github.io/net_ensembles/net_ensembles/).
