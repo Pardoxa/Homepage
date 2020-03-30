@@ -1517,11 +1517,13 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! You probably want to take a look at the struct `Graph`</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">node</span>::<span class="ident">Node</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">VecDeque</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashSet</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">GraphErrors</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 
 <span class="doccomment">/// # constant for dot options</span>
 <span class="doccomment">/// ```</span>
@@ -1533,47 +1535,11 @@
         node [shape=ellipse, penwidth=1, \
         fontname=\&quot;Courier\&quot;, pin=true ];\n\tsplines=true;&quot;</span>;
 
-<span class="doccomment">/// Error messages</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">GraphErrors</span>{
-    <span class="doccomment">/// ### somehow, the existing of the edge is a problem</span>
-    <span class="doccomment">/// Did you try to add an edge, which is already present, to the graph</span>
-    <span class="ident">EdgeExists</span>,
-    <span class="doccomment">/// ### ERROR 404: Edge not found ;)</span>
-    <span class="doccomment">/// Did you try to delete a non existing edge?</span>
-    <span class="ident">EdgeDoesNotExist</span>,
-    <span class="doccomment">/// ### Have you tried a smaller index?</span>
-    <span class="ident">IndexOutOfRange</span>,
-    <span class="doccomment">/// ### No self loops allowed!</span>
-    <span class="doccomment">/// Meaning you can&#39;t: `graph.add_edge(i, i);`</span>
-    <span class="ident">IdenticalIndices</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">GraphErrors</span> {
-    <span class="doccomment">/// get error message as `&amp;str`, for printing etc.</span>
-   <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-       <span class="kw">match</span> <span class="self">self</span> {
-           <span class="ident">GraphErrors</span>::<span class="ident">EdgeExists</span>          <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="string">&quot;EdgeExists&quot;</span>,
-           <span class="ident">GraphErrors</span>::<span class="ident">EdgeDoesNotExist</span>    <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="string">&quot;EdgeDoesNotExist&quot;</span>,
-           <span class="ident">GraphErrors</span>::<span class="ident">IndexOutOfRange</span>     <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="string">&quot;IndexOutOfRange&quot;</span>,
-           <span class="ident">GraphErrors</span>::<span class="ident">IdenticalIndices</span>    <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="string">&quot;IdenticalIndices&quot;</span>,
-       }
-   }
-}
-
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">GraphErrors</span> {
-
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">to_str</span>())
-    }
-}
-
 <span class="doccomment">/// # Used for accessing neighbor information from graph</span>
-<span class="doccomment">/// Contains Adjacency list</span>
+<span class="doccomment">/// * Contains Adjacency list</span>
 <span class="doccomment">///  and internal id. Normally the index in the graph.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Also contains user specified data, i.e, `T` from `NodeContainer&lt;T&gt;`</span>
+<span class="doccomment">/// * Also contains user specified data, i.e, `T` from `NodeContainer&lt;T&gt;`</span>
+<span class="doccomment">/// * See trait **`AdjContainer`**</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span>{
     <span class="ident">id</span>: <span class="ident">u32</span>,
@@ -1601,7 +1567,11 @@
 }
 
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+
+
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">id</span>: <span class="ident">u32</span>, <span class="ident">node</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">NodeContainer</span>{
             <span class="ident">id</span>,
@@ -1618,7 +1588,7 @@
     <span class="doccomment">/// ## Return</span>
     <span class="doccomment">/// 1) returns string slice beginning directly after the part, that was used to parse</span>
     <span class="doccomment">/// 2) the `NodeContainer` resulting form the parsing</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_str</span>(<span class="ident">to_parse</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="self">Self</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_str</span>(<span class="ident">to_parse</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="self">Self</span>)<span class="op">&gt;</span> {
         <span class="comment">// skip identifier PARSE_ID</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">split_index</span> <span class="op">=</span> <span class="ident">to_parse</span>.<span class="ident">find</span>(<span class="ident">PARSE_ID</span>)<span class="question-mark">?</span>;
         <span class="ident">split_index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">PARSE_ID</span>.<span class="ident">len</span>();
@@ -1666,36 +1636,36 @@
     }
 
     <span class="doccomment">/// return reference to what the NodeContainer contains</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contained</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">contained</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">node</span>
     }
 
     <span class="doccomment">/// return mut reference to what the NodeContainer contains</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contained_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">contained_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">node</span>
     }
 
     <span class="doccomment">/// returns iterator over indices of neighbors</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">neighbors</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">slice</span>::<span class="ident">Iter</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">neighbors</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">slice</span>::<span class="ident">Iter</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">iter</span>()
     }
 
     <span class="doccomment">/// count number of neighbors, i.e. number of edges incident to `self`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">neighbor_count</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">neighbor_count</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">len</span>()
     }
 
     <span class="doccomment">/// returns id of container</span>
     <span class="doccomment">/// ## Note:</span>
     <span class="doccomment">/// (in `Graph&lt;T&gt;`: `id` equals the index corresponding to `self`)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">id</span>
     }
 
     <span class="doccomment">/// check if vertex with `other_id` is adjacent to self</span>
     <span class="doccomment">/// ## Note:</span>
     <span class="doccomment">/// (in `Graph&lt;T&gt;`: `id` equals the index corresponding to `self`)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_adjacent</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">is_adjacent</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">contains</span>(<span class="ident">other_id</span>)
     }
 
@@ -1705,7 +1675,13 @@
         <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">sort_unstable</span>();
     }
 
-    <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(),<span class="ident">GraphErrors</span><span class="op">&gt;</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">clear_edges</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">clear</span>();
+    }
+
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>)
+        <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">GraphErrors</span><span class="op">&gt;</span>
+    {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_adjacent</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">id</span>()) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">GraphErrors</span>::<span class="ident">EdgeExists</span>);
         }
@@ -1714,18 +1690,10 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">swap_delete_element</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">elem</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> () {
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">adj</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">position</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">elem</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;swap_delete_element ERROR 0&quot;</span>);
-
-        <span class="self">self</span>.<span class="ident">adj</span>
-            .<span class="ident">swap_remove</span>(<span class="ident">index</span>);
-    }
-
     <span class="doccomment">/// Tries to remove edges, returns error `GraphErrors::EdgeDoesNotExist` if impossible</span>
-    <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(),<span class="ident">GraphErrors</span><span class="op">&gt;</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>)
+        <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">GraphErrors</span><span class="op">&gt;</span>
+    {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_adjacent</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">id</span>()){
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">GraphErrors</span>::<span class="ident">EdgeDoesNotExist</span>);
         }
@@ -1736,12 +1704,21 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">clear_edges</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">clear</span>();
-    }
-
     <span class="kw">fn</span> <span class="ident">get_adj_first</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">u32</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">adj</span>.<span class="ident">first</span>()
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+
+    <span class="kw">fn</span> <span class="ident">swap_delete_element</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">elem</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> () {
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">adj</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">position</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">elem</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;swap_delete_element ERROR 0&quot;</span>);
+
+        <span class="self">self</span>.<span class="ident">adj</span>
+            .<span class="ident">swap_remove</span>(<span class="ident">index</span>);
     }
 }
 
@@ -1750,7 +1727,7 @@
 <span class="doccomment">/// # Example:</span>
 <span class="doccomment">/// A graph, where each node stores a phase</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use net_ensembles::{Node,Graph};</span>
+<span class="doccomment">/// use net_ensembles::{traits::*,Graph};</span>
 <span class="doccomment">/// use std::fs::File;</span>
 <span class="doccomment">/// use std::io::prelude::*;</span>
 <span class="doccomment">/// // define your own vertices, if you need to store extra information at each vertex</span>
@@ -1840,7 +1817,7 @@
 <span class="doccomment">/// # Example 2</span>
 <span class="doccomment">/// * if you also want to be able to store your graph, you have to override two functions of the Node trait, as shown below</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use net_ensembles::{Node,Graph};</span>
+<span class="doccomment">/// use net_ensembles::{Node,Graph,traits::*};</span>
 <span class="doccomment">/// use std::fs::File;</span>
 <span class="doccomment">/// use std::io::prelude::*;</span>
 <span class="doccomment">/// // define your own vertices, if you need to store extra information at each vertex</span>
@@ -1991,14 +1968,17 @@
 <span class="doccomment">/// let clone2 = graph2.clone();</span>
 <span class="doccomment">/// assert_equal_graphs(&amp;clone, &amp;clone2);</span>
 <span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span>, <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="ident">next_id</span>: <span class="ident">u32</span>,
     <span class="ident">edge_count</span>: <span class="ident">u32</span>,
-    <span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">vertices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>,
+    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span>, <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
         <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">container_iter</span>() {
@@ -2008,19 +1988,20 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span><span class="op">&gt;</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Node</span>, <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create new graph with `size` nodes</span>
     <span class="doccomment">/// and no edges</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">size</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vertices</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size</span> <span class="kw">as</span> <span class="ident">usize</span>);
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">size</span> {
-            <span class="kw">let</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">NodeContainer</span>::<span class="ident">new</span>(<span class="ident">i</span>, <span class="ident">T</span>::<span class="ident">new_from_index</span>(<span class="ident">i</span>));
+            <span class="kw">let</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">A</span>::<span class="ident">new</span>(<span class="ident">i</span>, <span class="ident">T</span>::<span class="ident">new_from_index</span>(<span class="ident">i</span>));
             <span class="ident">vertices</span>.<span class="ident">push</span>(<span class="ident">container</span>);
         }
         <span class="self">Self</span>{
             <span class="ident">vertices</span>,
             <span class="ident">next_id</span>: <span class="ident">size</span>,
             <span class="ident">edge_count</span>: <span class="number">0</span>,
+            <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
         }
     }
 
@@ -2031,7 +2012,7 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">edge_count</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
             <span class="self">self</span>.<span class="ident">edge_count</span> <span class="op">=</span> <span class="number">0</span>;
             <span class="kw">for</span> <span class="ident">container</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">vertices</span>.<span class="ident">iter_mut</span>() {
-                <span class="ident">container</span>.<span class="ident">clear_edges</span>();
+                <span class="kw">unsafe</span> { <span class="ident">container</span>.<span class="ident">clear_edges</span>(); }
             }
         }
     }
@@ -2073,9 +2054,9 @@
         <span class="kw">let</span> <span class="ident">edge_count</span> <span class="op">=</span> <span class="ident">edge_count_str</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>().<span class="ident">ok</span>()<span class="question-mark">?</span>;
 
         <span class="comment">// Parse the vertex vector</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vertices</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">next_id</span> <span class="kw">as</span> <span class="ident">usize</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vertices</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="ident">next_id</span> <span class="kw">as</span> <span class="ident">usize</span>);
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">next_id</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">NodeContainer</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>::<span class="ident">parse_str</span>(<span class="kw-2">&amp;</span><span class="ident">remaining_to_parse</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">A</span>::<span class="ident">parse_str</span>(<span class="kw-2">&amp;</span><span class="ident">remaining_to_parse</span>)<span class="question-mark">?</span>;
             <span class="ident">remaining_to_parse</span> <span class="op">=</span> <span class="ident">result</span>.<span class="number">0</span>;
             <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="ident">result</span>.<span class="number">1</span>;
 
@@ -2087,6 +2068,7 @@
                     <span class="ident">vertices</span>,
                     <span class="ident">next_id</span>,
                     <span class="ident">edge_count</span>,
+                    <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
                 }
             ))
     }
@@ -2097,16 +2079,16 @@
     <span class="doccomment">/// * use this to check, if vertices are adjacent</span>
     <span class="doccomment">/// # Warning</span>
     <span class="doccomment">/// * **panics** if index out of bounds</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">container</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">container</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">A</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vertices</span>[<span class="ident">index</span>]
     }
 
     <span class="doccomment">/// get iterator over NodeContainer in order of the indices</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">container_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">slice</span>::<span class="ident">Iter</span>::<span class="op">&lt;</span><span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">container_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">slice</span>::<span class="ident">Iter</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">vertices</span>.<span class="ident">iter</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">container_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">container_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">vertices</span>[<span class="ident">index</span>]
     }
 
@@ -2138,15 +2120,15 @@
     <span class="doccomment">/// `GraphErrors::IndexOutOfRange`  &lt;-- index to large</span>
     <span class="doccomment">/// GraphErrors::IdenticalIndices &lt;-- index1 == index2 not allowed!</span>
     <span class="kw">fn</span> <span class="ident">get_2_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index1</span>: <span class="ident">u32</span>, <span class="ident">index2</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span>
-        <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>),<span class="ident">GraphErrors</span><span class="op">&gt;</span>
+        <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>),<span class="ident">GraphErrors</span><span class="op">&gt;</span>
     {
         <span class="kw">if</span> <span class="ident">index1</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">next_id</span> <span class="op">|</span><span class="op">|</span> <span class="ident">index2</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">next_id</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">GraphErrors</span>::<span class="ident">IndexOutOfRange</span>);
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">index1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">index2</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">GraphErrors</span>::<span class="ident">IdenticalIndices</span>);
         }
-        <span class="kw">let</span> <span class="ident">r1</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
-        <span class="kw">let</span> <span class="ident">r2</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+        <span class="kw">let</span> <span class="ident">r1</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>;
+        <span class="kw">let</span> <span class="ident">r2</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">A</span>;
 
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">vertices</span>.<span class="ident">as_mut_ptr</span>();
 
@@ -2167,7 +2149,7 @@
     <span class="doccomment">/// | `GraphErrors::EdgeExists` | requested edge already exists! |</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_edge</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index1</span>: <span class="ident">u32</span>, <span class="ident">index2</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(),<span class="ident">GraphErrors</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">r1</span>, <span class="ident">r2</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_2_mut</span>(<span class="ident">index1</span>, <span class="ident">index2</span>)<span class="question-mark">?</span>;
-        <span class="ident">r1</span>.<span class="ident">push</span>(<span class="ident">r2</span>)<span class="question-mark">?</span>;
+        <span class="kw">unsafe</span>{ <span class="ident">r1</span>.<span class="ident">push</span>(<span class="ident">r2</span>)<span class="question-mark">?</span>; }
         <span class="self">self</span>.<span class="ident">edge_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         <span class="prelude-val">Ok</span>(())
     }
@@ -2181,7 +2163,7 @@
     <span class="doccomment">/// | `GraphErrors::EdgeDoesNotExist` | requested edge does not exists |</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove_edge</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index1</span>: <span class="ident">u32</span>, <span class="ident">index2</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(),<span class="ident">GraphErrors</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">r1</span>, <span class="ident">r2</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_2_mut</span>(<span class="ident">index1</span>, <span class="ident">index2</span>)<span class="question-mark">?</span>;
-        <span class="ident">r1</span>.<span class="ident">remove</span>(<span class="ident">r2</span>)<span class="question-mark">?</span>;
+        <span class="kw">unsafe</span>{ <span class="ident">r1</span>.<span class="ident">remove</span>(<span class="ident">r2</span>)<span class="question-mark">?</span>; }
         <span class="self">self</span>.<span class="ident">edge_count</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
         <span class="prelude-val">Ok</span>(())
     }
@@ -2216,7 +2198,7 @@
     <span class="doccomment">/// Note:</span>
     <span class="doccomment">/// ----------------------</span>
     <span class="doccomment">/// Will only iterate over vertices within the connected component that contains vertex `index`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="ident">Dfs</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>)
     }
 
@@ -2235,7 +2217,7 @@
     <span class="doccomment">/// Note:</span>
     <span class="doccomment">/// ----------------------</span>
     <span class="doccomment">/// Will only iterate over vertices within the connected component that contains vertex `index`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dfs_with_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dfs_with_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="ident">DfsWithIndex</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>)
     }
 
@@ -2259,7 +2241,7 @@
     <span class="doccomment">/// Note:</span>
     <span class="doccomment">/// ----------------------</span>
     <span class="doccomment">/// Will only iterate over vertices within the connected component that contains vertex `index`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bfs_index_depth</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bfs_index_depth</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="ident">Bfs</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>)
     }
 
@@ -2830,18 +2812,22 @@
 
 <span class="doccomment">/// # Breadth first search Iterator with **index** and **depth** of corresponding nodes</span>
 <span class="doccomment">/// * iterator returns tuple: `(index, node, depth)`</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
-        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
+        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
         <span class="ident">queue0</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
         <span class="ident">queue1</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
         <span class="ident">depth</span>: <span class="ident">u32</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
-        <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
+        <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>; <span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>];
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue0</span> <span class="op">=</span> <span class="ident">VecDeque</span>::<span class="ident">with_capacity</span>(<span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>);
             <span class="kw">let</span> <span class="ident">queue1</span> <span class="op">=</span> <span class="ident">VecDeque</span>::<span class="ident">with_capacity</span>(<span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>);
@@ -2863,8 +2849,10 @@
 
 <span class="doccomment">/// # Iterator</span>
 <span class="doccomment">/// - returns tuple: `(index, node, depth)`</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Bfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
         <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u32</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>, <span class="ident">u32</span>);
         <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
             <span class="comment">// if queue0 is not empty, take element from queue, push neighbors to other queue</span>
@@ -2888,16 +2876,20 @@
 }
 
 <span class="doccomment">/// Depth first search Iterator with **index** of corresponding nodes</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
-        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
+        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
         <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
-        <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+    <span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+            <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
+        <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>; <span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>];
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>);
             <span class="kw">if</span> <span class="ident">index</span> <span class="op">&lt;</span> <span class="ident">graph</span>.<span class="ident">vertex_count</span>() {
@@ -2914,8 +2906,10 @@
 
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">DfsWithIndex</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
         <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u32</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>);
 
         <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
@@ -2935,18 +2929,22 @@
 }
 
 <span class="doccomment">/// Depth first search Iterator</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
-        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
+        <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
         <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
 
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>{
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
     <span class="doccomment">/// panics if `index` &gt;= graph.vertex_count()</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Graph</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericGraph</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handled</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>; <span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">graph</span>.<span class="ident">vertex_count</span>() <span class="kw">as</span> <span class="ident">usize</span>);
         <span class="kw">if</span> <span class="ident">index</span> <span class="op">&lt;</span> <span class="ident">graph</span>.<span class="ident">vertex_count</span>() {
@@ -2962,8 +2960,10 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Dfs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">where</span>   <span class="ident">T</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Node</span>,
+        <span class="ident">A</span>: <span class="ident">AdjContainer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+{
         <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>;
 
         <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
@@ -2986,7 +2986,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">node</span>::<span class="ident">TestNode</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">TestNode</span>;
 
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2995,12 +2995,12 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">NodeContainer</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="ident">TestNode</span>::<span class="ident">new_from_index</span>(<span class="number">0</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c2</span> <span class="op">=</span> <span class="ident">NodeContainer</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="ident">TestNode</span>::<span class="ident">new_from_index</span>(<span class="number">1</span>));
         <span class="comment">// create edge -&gt; should not result in error!</span>
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c2</span>);
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">c</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c2</span>) };
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">res</span> {
             <span class="macro">panic</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;error: {}&quot;</span>, <span class="ident">e</span>));
         }
         <span class="comment">// now edge exists, should not be able to add it again:</span>
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c2</span>);
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">c</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c2</span>) };
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">res</span>.<span class="ident">is_err</span>());
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">c</span>.<span class="ident">id</span>());

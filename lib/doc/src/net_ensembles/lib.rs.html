@@ -66,6 +66,9 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! I am writing this libary for my scientific simulations</span>
 <span class="doccomment">//!</span>
@@ -124,16 +127,19 @@
 <span class="doccomment">//! println!(&quot;connected components: {:?}&quot;,  er.graph().connected_components());</span>
 <span class="doccomment">//! println!(&quot;transitivity: {}&quot;,            er.graph().transitivity());</span>
 <span class="doccomment">//! ```</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">node</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">example_nodes</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">graph</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">er</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">graph_traits</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">traits</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">node</span>::<span class="ident">Node</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">node</span>::<span class="ident">TestNode</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">node</span>::<span class="ident">EmptyNode</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">example_nodes</span>::<span class="ident">TestNode</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">example_nodes</span>::<span class="ident">EmptyNode</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">er</span>::<span class="ident">ER</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">er</span>::<span class="ident">ErStep</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">graph</span>::<span class="ident">Graph</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">graph</span>::<span class="ident">DEFAULT_DOT_OPTIONS</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">graph_traits</span>::<span class="ident">GraphErrors</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">traits</span>::<span class="kw-2">*</span>;
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "net_ensembles";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

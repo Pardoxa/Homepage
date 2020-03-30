@@ -260,7 +260,7 @@
 <span class="doccomment">//! # Minimal example:</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! use net_ensembles;</span>
-<span class="doccomment">//! use net_ensembles::Node;</span>
+<span class="doccomment">//! use net_ensembles::traits::*;</span>
 <span class="doccomment">//! use rand_pcg::Pcg64;</span>
 <span class="doccomment">//! use rand::SeedableRng;</span>
 <span class="doccomment">//!</span>
@@ -283,10 +283,10 @@
 <span class="doccomment">//! assert_eq!(20, e.graph().vertex_count());</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! Take a look at the struct `ER` for details</span>
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">node</span>::<span class="ident">Node</span>;
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">SeedableRng</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">graph</span>::<span class="ident">Graph</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">graph</span>::<span class="ident">GraphErrors</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">GraphErrors</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Node</span>;
 
 <span class="doccomment">/// # Returned by Monte Carlo Steps</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -459,7 +459,7 @@
 <span class="kw">mod</span> <span class="ident">testing</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">rand_pcg</span>::<span class="ident">Pcg64</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">node</span>::<span class="ident">TestNode</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">TestNode</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_edge_count</span>() {
