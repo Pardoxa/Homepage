@@ -26,5 +26,5 @@ auto-header: none
    Now I am working on <em><strong>&ldquo;Large deviation properties of dynamical networks&rdquo;</strong></em>.<br /><br />
    For example on <strong>SIR</strong> networks:
    </div>
-   <img style="max-width: 100%; height: auto;" src="{{site.baseurl}}/assets/images/sir_animation_const_recovery.gif" alt="SIR animation" />
+   <img style="max-width: 100%; height: auto;" src="{{site.baseurl}}/assets/images/sir_animation.gif" alt="SIR animation" />
 </p>
