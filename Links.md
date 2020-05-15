@@ -15,3 +15,7 @@ auto-header: none
 {% endfor %}
   </ul>
 </div>
+
+# Contact
+
+[yannick.feld@uni-oldenburg.de](mailto:yannick.feld@uni-oldenburg.de)
