@@ -3,12 +3,13 @@
 # Edit theme's home layout instead if you wanna make some changes
 # See: https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 layout: "page"
-title: Rust library - net_ensembles
+title: Rust library
 subtitle:
 auto-header: none
 icon: fa-th
 order: 1
 ---
+## net_ensembles
 [![Crate](https://img.shields.io/crates/v/net_ensembles.svg)](https://crates.io/crates/net_ensembles)
 [![Docs](https://docs.rs/net_ensembles/badge.svg)](https://docs.rs/net_ensembles/)
 [![Rust unit tests - master](https://github.com/Pardoxa/net_ensembles/workflows/Rust%20unit%20tests%20-%20master/badge.svg?branch=master)](https://github.com/Pardoxa/net_ensembles)  
@@ -22,61 +23,43 @@ As such, you can easily define additional data that should be stored at each ver
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-net_ensembles = "0.3"
+net_ensembles = "0.4"
 # for feature "serde_support" (enabled by default) also use
 serde = { version = "1.0", features = ["derive"] }
 ```
 If you do not need `serde` support, add this instead:
 ```toml
 [dependencies]
-net_ensembles = { version = "0.3", default-features = false  }
+net_ensembles = { version = "0.4", default-features = false  }
 ```
 
-## currently implemented graph ensembles
+## Currently implemented graph ensembles
 
 * Erdős-Rényi (x2)
 * small-world
 
-## Graph
+### work in progress
+* Barabási-Albert
+* Configuration Model
 
-* visualize the current graph (create a `*.dot` file)
-- average degree
-- connected components
-- diameter
-- is_connected
-- leaf count
-- q_core
-- transitivity
-- biconnected component
-- vertex_load (closely related, often equal to betweeness)
+## Note
 
-#### Iterators
+On a 64 bit system drawing an usize consumes more than on a 32 bit system, 
+therefore ensembles drawn etc. are affected by the size of `usize`.
 
-* depth first search from index
-* breadth first search from index
-* over additional data
-* …
-
-### For each vertex
-
-* degree
-* check adjacency with other nodes
-* access additional data
-
-#### Iterators
-* iterate over indices stored in adjacency list
-* …
-
-## Documentation
-
-* [changelog](https://github.com/Pardoxa/net_ensembles/blob/master/CHANGELOG.md)
-* [current working branch](https://pardoxa.github.io/net_ensembles/master/doc/net_ensembles/)
-* [releases](https://docs.rs/net_ensembles/)
-
-## Notes
+## Warranties
 
 No warranties whatsoever, but since
-I am writing this library for my own simulations,
-I do my best to avoid errors.  
+I am writing this library for my own scientific simulations,
+I do my best to avoid errors.
+
 If you notice any bugs, or want to request new features: do not hesitate to
 open a new [issue](https://github.com/Pardoxa/net_ensembles/issues) on the repository.
+
+## Documentation
+For more information, please look at the documentation.
+If anything in the documentation is unclear, please 
+open an [issue](https://github.com/Pardoxa/net_ensembles/issues) on the repository.
+
+* [current working branch](https://pardoxa.github.io/net_ensembles/master/doc/net_ensembles/)
+* [releases](https://docs.rs/net_ensembles/)

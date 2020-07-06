@@ -22,7 +22,7 @@ auto-header: none
    <a class="blue" href="https://uol.de">University Oldenburg</a>.
 
    <div align="left">
-   I just finished writing my master thesis on <em><strong>&ldquo;Large deviation properties of the basin stability of networks based on Kuramoto-like model&rdquo;</strong></em>.<br />
+   I wrote my master thesis on <em><strong>&ldquo;Large deviation properties of the basin stability of networks based on Kuramoto-like model&rdquo;</strong></em>.<br />
    Now I am working on <em><strong>&ldquo;Large deviation properties of dynamical networks&rdquo;</strong></em>.<br /><br />
    For example on <strong>SIR</strong> networks:
    </div>
